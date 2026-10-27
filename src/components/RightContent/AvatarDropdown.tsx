@@ -1,13 +1,7 @@
-import {
-  LogoutOutlined,
-  SettingOutlined,
-  SkinOutlined,
-} from '@ant-design/icons';
+import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { history, useModel } from '@umijs/max';
 import type { MenuProps } from 'antd';
-import { Spin } from 'antd';
 import React, { startTransition } from 'react';
-import { outLogin } from '@/services/ant-design-pro/api';
 import HeaderDropdown from '../HeaderDropdown';
 
 type GlobalHeaderRightProps = {
@@ -16,36 +10,20 @@ type GlobalHeaderRightProps = {
 
 const menuItems: MenuProps['items'] = [
   {
-    key: 'settings',
-    icon: <SettingOutlined />,
-    label: '个人设置',
-  },
-  {
-    key: 'theme',
-    icon: <SkinOutlined />,
-    label: '主题设置',
-  },
-  {
-    type: 'divider' as const,
-  },
-  {
     key: 'logout',
     icon: <LogoutOutlined />,
     label: '退出登录',
   },
 ];
 
-const loginOut = async () => {
-  try {
-    await outLogin();
-  } catch {
-    // Local logout has already cleared user state; redirect should still proceed.
-  }
+const loginOut = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('username');
   const { search, pathname } = window.location;
-  const urlParams = new URL(window.location.href).searchParams;
   const searchParams = new URLSearchParams({
     redirect: pathname + search,
   });
+  const urlParams = new URL(window.location.href).searchParams;
   const redirect = urlParams.get('redirect');
   if (window.location.pathname !== '/user/login' && !redirect) {
     history.replace({
@@ -67,23 +45,15 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({
         setInitialState((s) => ({ ...s, currentUser: undefined }));
       });
       loginOut();
-      return;
     }
-    if (key === 'theme') {
-      setInitialState((s) => ({ ...s, settingDrawerOpen: true }));
-      return;
-    }
-    history.push(`/account/${key}`);
   };
 
-  if (!initialState) {
-    return <Spin size="small" />;
-  }
-
-  const { currentUser } = initialState;
-
-  if (!currentUser) {
-    return <Spin size="small" />;
+  if (!initialState?.currentUser) {
+    return (
+      <span className={`${'anticon'} ${'anticon-spin'} anticon-user`}>
+        <UserOutlined />
+      </span>
+    );
   }
 
   return (

@@ -26,12 +26,17 @@
   "dependencies": {
     "@ant-design/icons": "^6.3.4",
     "@ant-design/pro-components": "^3.1.14-2",
+    "@schedule-x/calendar": "^4.9.1",
+    "@schedule-x/events-service": "^4.9.1",
+    "@schedule-x/react": "^4.1.0",
+    "@schedule-x/theme-default": "^4.9.1",
     "antd": "^6.6.7",
     "antd-style": "^4.1.0",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.23",
     "react": "^19.3.1",
-    "react-dom": "^19.3.1"
+    "react-dom": "^19.3.1",
+    "temporal-polyfill": "^1.0.6"
   },
   "devDependencies": {
     "@ant-design/cli": "^6.6.7",
@@ -104,4 +109,4 @@
       "create-umi"
     ]
   }
-}\n
+}
