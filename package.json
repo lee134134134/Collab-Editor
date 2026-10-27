@@ -1,31 +1,107 @@
 {
   "name": "ai-admin",
+  "version": "6.0.3",
   "private": true,
-  "version": "0.1.0",
-  "type": "module",
+  "description": "AI 服务管理后台(基于 ant-design-pro)",
   "scripts": {
-    "dev": "vite",
-    "build": "vue-tsc -b && vite build",
-    "preview": "vite preview",
-    "type-check": "vue-tsc --noEmit"
+    "analyze": "cross-env ANALYZE=1 max build",
+    "build": "max build",
+    "dev": "cross-env UMI_ENV=dev PORT=8001 MOCK=none max dev",
+    "lint": "npm run biome:lint && npm run tsc",
+    "lint-staged": "lint-staged",
+    "biome:lint": "biome lint",
+    "biome": "biome check --write",
+    "prepare": "npx husky && max setup",
+    "preview": "max preview --port 8000",
+    "preview:build": "max build && max preview --port 8000",
+    "start": "cross-env UMI_ENV=dev PORT=8001 max dev",
+    "start:no-mock": "cross-env MOCK=none max dev",
+    "start:pre": "cross-env UMI_ENV=pre MOCK=none max dev",
+    "start:test": "cross-env UMI_ENV=test MOCK=none max dev",
+    "tsc": "tsc --noEmit"
   },
+  "browserslist": [
+    "defaults"
+  ],
   "dependencies": {
-    "@element-plus/icons-vue": "^2.3.1",
-    "@schedule-x/calendar": "^4.9.1",
-    "@schedule-x/events-service": "^4.9.1",
-    "@schedule-x/theme-default": "^4.9.1",
-    "axios": "^1.19.0",
-    "element-plus": "^2.9.0",
-    "pinia": "^3.0.0",
-    "temporal-polyfill": "^1.0.5",
-    "vue": "^3.5.13",
-    "vue-router": "^4.5.0"
+    "@ant-design/icons": "^6.3.4",
+    "@ant-design/pro-components": "^3.1.14-2",
+    "antd": "^6.6.7",
+    "antd-style": "^4.1.0",
+    "clsx": "^2.1.1",
+    "dayjs": "^1.11.23",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
   },
   "devDependencies": {
-    "@types/node": "^22.10.0",
-    "@vitejs/plugin-vue": "^6.0.0",
-    "typescript": "~5.8.0",
-    "vite": "^7.0.0",
-    "vue-tsc": "^2.2.0"
+    "@ant-design/cli": "^6.6.7",
+    "@biomejs/biome": "^2.6.3",
+    "@commitlint/cli": "^21.2.4",
+    "@commitlint/config-conventional": "^21.2.4",
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@umijs/max": "^4.7.27",
+    "cross-env": "^10.1.0",
+    "express": "^5.3.0",
+    "gh-pages": "^6.3.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
+    "mockjs": "^1.1.0",
+    "playwright": "^1.64.1",
+    "react-doctor": "^0.9.18",
+    "swagger-ui-dist": "^5.34.0",
+    "tailwindcss": "^4.3.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^7.0.2",
+    "vitest-browser-react": "^2.3.0"
+  },
+  "overrides": {
+    "@umijs/plugins": {
+      "@ant-design/pro-components": "$@ant-design/pro-components",
+      "axios": "^1.19.0"
+    },
+    "@umijs/lint": {
+      "@babel/core": "^7.29.6"
+    },
+    "dva-immer": {
+      "immer": "^9.0.6"
+    },
+    "cosmiconfig": {
+      "js-yaml": "^4.3.1"
+    },
+    "postcss": "^8.5.23"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "create-umi": {
+    "ignoreScript": [
+      "docker*",
+      "functions*",
+      "site",
+      "generateMock"
+    ],
+    "ignoreDependencies": [
+      "netlify*",
+      "serverless"
+    ],
+    "ignore": [
+      ".dockerignore",
+      ".git",
+      ".github",
+      ".gitpod.yml",
+      "CODE_OF_CONDUCT.md",
+      "Dockerfile",
+      "Dockerfile.*",
+      "lambda",
+      "LICENSE",
+      "netlify.toml",
+      "README.*.md",
+      "azure-pipelines.yml",
+      "docker",
+      "CNAME",
+      "create-umi"
+    ]
   }
-}
+}\n

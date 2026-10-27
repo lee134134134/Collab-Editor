@@ -1,3 +1,0 @@
-# pnpm 构建脚本白名单
-allowBuilds:
-  esbuild: true
