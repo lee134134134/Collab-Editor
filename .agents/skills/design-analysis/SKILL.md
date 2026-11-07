@@ -75,5 +75,5 @@ create-proposal ──(有稿)──> design-analysis ──> [create-route/api/
 ```
 
 - **前置**：`.agents/skills/create-proposal`（决定是否需要分析）
-- **后续**：`.agents/skills/ui-verification`（拿本清单做验收对照）
-- **实施**：`.agents/skills/create-route` / `create-component` / `element-plus-theme`
+- **后续**：按清单人工核对或使用浏览器工具比对实现页
+- **实施**：`.agents/skills/create-route` / `create-component` / `create-api`

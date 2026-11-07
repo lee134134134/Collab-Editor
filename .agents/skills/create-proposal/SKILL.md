@@ -173,5 +173,5 @@ openspec list                    # 确认变更在列
 ## 相关技能
 
 - 设计稿分析 → `.agents/skills/design-analysis`
-- UI 验收 → `.agents/skills/ui-verification`
-- 实施阶段：`create-route` / `create-api` / `create-store` / `create-component` / `element-plus-theme`
+- 实施阶段：`create-route` / `create-api` / `create-component`
+- 质量门禁 → `.agents/rules/11-测试规范.md`
