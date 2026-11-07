@@ -1,4 +1,4 @@
-# Collab Editor
+# Collab-Editor
 
 类飞书在线协同文档编辑器：CRDT 实时协同、在线状态与协同光标、富文本、评论批注、文档库。
 

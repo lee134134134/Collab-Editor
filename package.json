@@ -1,5 +1,5 @@
 {
-  "name": "collab-monorepo",
+  "name": "collab-editor",
   "version": "0.0.1",
   "private": true,
   "description": "类飞书协同文档编辑器 —— pnpm monorepo (web / server / shared)",

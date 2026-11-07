@@ -1,4 +1,4 @@
-# Collab Editor — 类飞书协同文档编辑器
+# Collab-Editor — 类飞书协同文档编辑器
 
 pnpm monorepo：React 19 + antd 6 + Umi max 前端，NestJS + Yjs 后端，交付 CRDT 实时协同编辑、
 在线状态/协同光标、评论批注与文档库。

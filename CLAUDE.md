@@ -1,4 +1,4 @@
-# Collab Editor（Claude 协作文档）
+# Collab-Editor（Claude 协作文档）
 
 类飞书协同文档编辑器，pnpm monorepo。完整说明见 `AGENTS.md`；如有冲突以实际代码为准。
 
