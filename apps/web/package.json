@@ -1,0 +1,63 @@
+{
+  "name": "@collab/web",
+  "version": "6.0.3",
+  "private": true,
+  "description": "协同文档编辑器 Web 前端（React 19 + antd 6 + Umi Max）",
+  "scripts": {
+    "analyze": "cross-env ANALYZE=1 max build",
+    "build": "max build",
+    "dev": "cross-env UMI_ENV=dev PORT=8001 MOCK=none max dev",
+    "lint": "max setup && tsc --noEmit",
+    "preview": "max preview --port 8000",
+    "preview:build": "max build && max preview --port 8000",
+    "start": "cross-env UMI_ENV=dev PORT=8001 max dev",
+    "start:no-mock": "cross-env MOCK=none max dev",
+    "start:pre": "cross-env UMI_ENV=pre MOCK=none max dev",
+    "start:test": "cross-env UMI_ENV=test MOCK=none max dev",
+    "tsc": "max setup && tsc --noEmit",
+    "type-check": "max setup && tsc --noEmit"
+  },
+  "browserslist": [
+    "defaults"
+  ],
+  "dependencies": {
+    "@ant-design/icons": "^6.3.4",
+    "@ant-design/pro-components": "^3.1.14-2",
+    "@collab/shared": "workspace:*",
+    "@floating-ui/dom": "^1.7.4",
+    "@tiptap/core": "3.32.2",
+    "@tiptap/extension-bubble-menu": "3.32.2",
+    "@tiptap/extension-collaboration": "3.32.2",
+    "@tiptap/extension-collaboration-caret": "3.32.2",
+    "@tiptap/extension-table": "3.32.2",
+    "@tiptap/extensions": "3.32.2",
+    "@tiptap/pm": "3.32.2",
+    "@tiptap/react": "3.32.2",
+    "@tiptap/starter-kit": "3.32.2",
+    "@tiptap/y-tiptap": "3.0.12",
+    "antd": "^6.6.7",
+    "antd-style": "^4.1.0",
+    "clsx": "^2.1.1",
+    "dayjs": "^1.11.23",
+    "lib0": "^0.2.99",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "y-websocket": "^3.1.0",
+    "yjs": "^13.6.33"
+  },
+  "devDependencies": {
+    "@ant-design/cli": "^6.6.7",
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@umijs/max": "^4.7.27",
+    "cross-env": "^10.1.0",
+    "express": "^5.3.0",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2",
+    "vitest-browser-react": "^2.3.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

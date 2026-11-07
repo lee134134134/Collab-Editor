@@ -7,7 +7,7 @@
 _roadhog-api-doc
 
 # production
-/dist
+dist
 
 # misc
 .DS_Store
@@ -62,3 +62,9 @@ e2e-out
 # 本地 agent 工具
 .omo/
 .codegraph
+
+# deepwork 运行状态
+.slim/deepwork/
+apps/server/data/
+.env
+.env.local

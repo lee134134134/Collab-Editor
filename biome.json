@@ -9,6 +9,15 @@
     "ignoreUnknown": true,
     "includes": [
       "**/*",
+      "!references",
+      "!.slim",
+      "!.agents",
+      "!.claude",
+      "!.cursor",
+      "!.gemini",
+      "!.opencode",
+      "!.trae",
+      "!openspec",
       "!**/.umi",
       "!**/.umi-production",
       "!**/.umi-test",
@@ -16,7 +25,6 @@
       "!**/src/services",
       "!**/mock",
       "!**/dist",
-      "!**/server",
       "!**/public",
       "!**/coverage",
       "!**/node_modules",
@@ -50,6 +58,9 @@
     }
   },
   "javascript": {
+    "parser": {
+      "unsafeParameterDecoratorsEnabled": true
+    },
     "jsxRuntime": "reactClassic",
     "formatter": {
       "quoteStyle": "single"

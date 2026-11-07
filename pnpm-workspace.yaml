@@ -1,0 +1,43 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+# pnpm 12: 允许执行安装/构建脚本的依赖白名单（pnpm 11+ 取代 onlyBuiltDependencies）
+# 宁多勿漏：web 侧 Umi/antd 工具链与未来 server 侧 better-sqlite3 均需放行
+allowBuilds:
+  # better-sqlite3@13 自带 N-API prebuilds（prebuilds/*.node 随包分发，ABI 稳定），
+  # 无需本地 node-gyp；置 false 阻止 pnpm 对 binding.gyp 的隐式 node-gyp rebuild（本机无 node-gyp 会 127）
+  better-sqlite3: false
+  esbuild: true
+  '@swc/core': true
+  husky: true
+  core-js: true
+  core-js-pure: true
+  es5-ext: true
+  '@biomejs/biome': true
+  '@parcel/watcher': true
+  '@napi-rs/canvas': true
+  '@utoo/pack': true
+  '@utoo/pack-shared': true
+  sharp: true
+  unrs-resolver: true
+  bufferutil: true
+  utf-8-validate: true
+  dtrace-provider: true
+  fsevents: true
+  lmdb: true
+  msgpackr-extract: true
+  protobufjs: true
+  simple-git-hooks: true
+  workerd: true
+  '@tailwindcss/oxide': true
+
+# pnpm 12：overrides 的新家（package.json 的 pnpm 字段已不再被读取）
+# 恢复原 npm overrides 的安全 floor pin（axios / postcss / js-yaml / immer / @babel/core）
+# 作用域覆盖用 "parent>child" 选择器语法（YAML 不支持嵌套对象）
+overrides:
+  axios: ^1.19.0
+  postcss: ^8.5.23
+  'cosmiconfig>js-yaml': ^4.1.3
+  'dva-immer>immer': ^9.0.6
+  '@umijs/lint>@babel/core': ^7.29.6

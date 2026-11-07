@@ -1,0 +1,249 @@
+.doc-editor__toolbar {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fff;
+}
+
+.doc-editor__content {
+  flex: 1;
+  overflow: auto;
+  padding: 24px;
+  background: #f5f5f5;
+}
+
+.doc-editor__paper {
+  max-width: 800px;
+  margin: 0 auto;
+  min-height: 800px;
+  background: #fff;
+  padding: 48px 56px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border-radius: 4px;
+}
+
+/* ProseMirror 基础排版 */
+.ProseMirror {
+  outline: none;
+  min-height: 100%;
+  line-height: 1.7;
+  color: #262626;
+}
+
+.ProseMirror p {
+  margin: 0 0 0.75em;
+}
+
+.ProseMirror h1,
+.ProseMirror h2,
+.ProseMirror h3,
+.ProseMirror h4,
+.ProseMirror h5,
+.ProseMirror h6 {
+  margin: 1.2em 0 0.6em;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.ProseMirror h1 {
+  font-size: 2em;
+}
+
+.ProseMirror h2 {
+  font-size: 1.6em;
+}
+
+.ProseMirror h3 {
+  font-size: 1.3em;
+}
+
+.ProseMirror ul,
+.ProseMirror ol {
+  padding-left: 1.5em;
+  margin: 0 0 0.75em;
+}
+
+.ProseMirror ul {
+  list-style: disc;
+}
+
+.ProseMirror ol {
+  list-style: decimal;
+}
+
+.ProseMirror blockquote {
+  margin: 0 0 0.75em;
+  padding-left: 1em;
+  border-left: 4px solid #d9d9d9;
+  color: #595959;
+}
+
+.ProseMirror pre {
+  background: #f6f8fa;
+  border-radius: 4px;
+  padding: 0.75em 1em;
+  margin: 0 0 0.75em;
+  overflow-x: auto;
+}
+
+.ProseMirror code {
+  background: #f0f0f0;
+  padding: 0.15em 0.35em;
+  border-radius: 3px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.9em;
+}
+
+.ProseMirror pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.ProseMirror hr {
+  border: none;
+  border-top: 1px solid #d9d9d9;
+  margin: 1.5em 0;
+}
+
+.ProseMirror table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 0.75em;
+}
+
+.ProseMirror th,
+.ProseMirror td {
+  border: 1px solid #d9d9d9;
+  padding: 0.5em 0.75em;
+  vertical-align: top;
+}
+
+.ProseMirror th {
+  background: #fafafa;
+  font-weight: 600;
+}
+
+.ProseMirror a {
+  color: #1677ff;
+  text-decoration: underline;
+}
+
+/* 评论高亮 Mark */
+.comment-mark {
+  background-color: rgba(250, 219, 95, 0.45);
+  border-bottom: 2px solid #fadb14;
+  cursor: pointer;
+}
+
+.comment-mark--resolved {
+  background-color: rgba(140, 140, 140, 0.2);
+  border-bottom-color: #8c8c8c;
+}
+
+/* 评论定位闪烁动画 */
+.comment-flash {
+  background-color: rgba(250, 219, 95, 0.8);
+  transition: background-color 0.5s ease-out;
+  animation: comment-flash-fade 1.5s forwards;
+}
+
+@keyframes comment-flash-fade {
+  0% {
+    background-color: rgba(250, 219, 95, 0.9);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+/* 远端协同光标（CollaborationCaret 默认 DOM） */
+.collaboration-carets__caret {
+  position: absolute;
+  pointer-events: none;
+  width: 2px;
+  height: 1.2em;
+}
+
+.collaboration-carets__label {
+  position: absolute;
+  top: -1.4em;
+  left: -2px;
+  padding: 2px 6px;
+  border-radius: 3px 3px 3px 0;
+  font-size: 11px;
+  font-weight: 500;
+  color: #fff;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.collaboration-carets__selection {
+  opacity: 0.25;
+}
+
+/* 编辑器布局辅助 */
+.doc-editor__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #fff;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.doc-editor__title-input {
+  flex: 1;
+  max-width: 480px;
+}
+
+.doc-editor__title-input input {
+  font-size: 16px;
+  font-weight: 500;
+  border: none;
+  background: transparent;
+  padding: 4px 8px;
+}
+
+.doc-editor__title-input input:hover,
+.doc-editor__title-input input:focus {
+  background: #f5f5f5;
+}
+
+/* 评论面板 */
+.comment-panel {
+  width: 360px;
+  flex-shrink: 0;
+  border-left: 1px solid #f0f0f0;
+  display: flex;
+  flex-direction: column;
+}
+
+.comment-panel .ant-card-body {
+  flex: 1;
+  overflow: auto;
+  padding: 12px;
+}
+
+.comment-thread {
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.comment-thread__quote {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.comment-thread__replies {
+  margin-top: 12px;
+  padding-left: 28px;
+}
+
+.comment-thread__reply {
+  margin-top: 8px;
+}
+
+/* BubbleMenu 按钮 */
+.doc-editor__bubble-btn {
+  font-size: 13px;
+}
