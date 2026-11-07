@@ -73,6 +73,7 @@ async function ensureWeb() {
 
 async function login(page, username, password) {
   await page.goto(`${WEB}/user/login`, { waitUntil: 'domcontentloaded' });
+  await page.waitForSelector('#username', { timeout: 30_000 });
   await page.fill('#username', username);
   await page.fill('#password', password);
   await Promise.all([

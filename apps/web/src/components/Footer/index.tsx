@@ -16,7 +16,7 @@ const Footer: React.FC = () => {
   const { styles } = useStyles();
   const year = new Date().getFullYear();
 
-  return <div className={styles.footer}>AI 服务管理后台 &copy; {year}</div>;
+  return <div className={styles.footer}>协同文档 &copy; {year}</div>;
 };
 
 export default Footer;

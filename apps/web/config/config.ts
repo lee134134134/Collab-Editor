@@ -114,7 +114,7 @@ const config: ReturnType<typeof defineConfig> = defineConfig({
    * @name layout 插件
    * @doc https://umijs.org/docs/max/layout-menu
    */
-  title: 'AI 服务管理后台',
+  title: '协同文档',
   layout: {
     locale: true,
     ...defaultSettings,
@@ -167,15 +167,6 @@ const config: ReturnType<typeof defineConfig> = defineConfig({
    * @doc https://umijs.org/docs/max/access
    */
   access: {},
-  /**
-   * @name <head> 中额外的 script
-   * @description 配置 <head> 中额外的 script
-   */
-  headScripts: [
-    // 解决首次加载时白屏的问题
-    { src: join(PUBLIC_PATH, 'scripts/loading.js'), async: true },
-  ],
-
   tailwindcss: {},
 
   mock: {

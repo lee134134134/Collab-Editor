@@ -127,7 +127,7 @@ const Login: React.FC = () => {
           }}
           logo="https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg"
           title={Settings.title}
-          subTitle="AI 服务运营、监控与配置管理"
+          subTitle="实时协同编辑 · 评论批注"
           onFinish={handleSubmit}
         >
           {errorMessage && <LoginMessage content={errorMessage} />}
