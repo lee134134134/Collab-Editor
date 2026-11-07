@@ -1,6 +1,8 @@
 import {
-  CheckOutlined,
+  AimOutlined,
+  CheckCircleOutlined,
   CloseOutlined,
+  DeleteOutlined,
   MessageOutlined,
 } from '@ant-design/icons';
 import type { CommentThread } from '@collab/shared';
@@ -12,14 +14,12 @@ import {
 import {
   Avatar,
   Button,
-  Card,
   Empty,
   Input,
   message,
-  Space,
-  Spin,
-  Switch,
-  Typography,
+  Popconfirm,
+  Skeleton,
+  Tooltip,
 } from 'antd';
 import dayjs from 'dayjs';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -36,6 +36,9 @@ interface CommentPanelProps {
   docId: string;
   editor: Editor;
   ydoc: Y.Doc;
+  /** 窄屏下由顶栏切换；宽屏常驻 */
+  visible: boolean;
+  onClose: () => void;
 }
 
 const FLASH_CLASS = 'comment-flash';
@@ -53,13 +56,22 @@ function buildThreads(comments: CommentDTO[]): CommentThread[] {
   }));
 }
 
+const getInitial = (author: CommentDTO['author']) =>
+  author.displayName?.slice(0, 1) ?? author.username.slice(0, 1);
+
+const getAuthorName = (author: CommentDTO['author']) =>
+  author.displayName ?? author.username;
+
 export const CommentPanel: React.FC<CommentPanelProps> = ({
   docId,
   editor,
   ydoc,
+  visible,
+  onClose,
 }) => {
   const [comments, setComments] = useState<CommentDTO[]>([]);
-  const [loading, setLoading] = useState(false);
+  // 首屏直接给骨架屏，避免空态闪一下
+  const [loading, setLoading] = useState(true);
   const [replyTo, setReplyTo] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState('');
   const [replyLoading, setReplyLoading] = useState(false);
@@ -215,150 +227,201 @@ export const CommentPanel: React.FC<CommentPanelProps> = ({
     }
   };
 
-  const renderThread = (thread: CommentThread) => (
-    <div key={thread.id} className="comment-thread">
-      {thread.anchor?.quote && (
-        <Typography.Paragraph
-          type="secondary"
-          className="comment-thread__quote"
-          ellipsis={{ rows: 2 }}
-        >
-          「{thread.anchor.quote}」
-        </Typography.Paragraph>
-      )}
-      <Space align="start" className="comment-thread__header">
-        <Avatar
-          size="small"
-          style={{
-            backgroundColor: thread.author.color,
-            color: '#fff',
-          }}
-        >
-          {thread.author.displayName?.slice(0, 1) ??
-            thread.author.username.slice(0, 1)}
-        </Avatar>
-        <div style={{ flex: 1 }}>
-          <Space>
-            <Typography.Text strong>
-              {thread.author.displayName ?? thread.author.username}
-            </Typography.Text>
-            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-              {dayjs(thread.createdAt).format('MM-DD HH:mm')}
-            </Typography.Text>
-          </Space>
-          <div>
-            <Typography.Text>{thread.content}</Typography.Text>
-          </div>
-          <Space size="small" style={{ marginTop: 8 }}>
-            <Button
-              type="text"
-              size="small"
-              icon={<MessageOutlined />}
-              onClick={() =>
-                setReplyTo(replyTo === thread.id ? null : thread.id)
-              }
-            >
-              回复
-            </Button>
-            <Button
-              type="text"
-              size="small"
-              onClick={() => navigateToComment(thread)}
-            >
-              定位
-            </Button>
-            <Switch
-              checkedChildren={<CheckOutlined />}
-              unCheckedChildren={<CloseOutlined />}
-              checked={thread.resolved}
-              onChange={(checked) => handleResolve(thread.id, checked)}
-              size="small"
-            />
-            <Button
-              type="text"
-              danger
-              size="small"
-              onClick={() => handleDelete(thread.id)}
-            >
-              删除
-            </Button>
-          </Space>
-          {replyTo === thread.id && (
-            <div style={{ marginTop: 8 }}>
-              <Input.TextArea
-                rows={2}
-                value={replyContent}
-                onChange={(e) => setReplyContent(e.target.value)}
-                placeholder="回复..."
-              />
-              <Space style={{ marginTop: 8 }}>
-                <Button
-                  type="primary"
-                  size="small"
-                  loading={replyLoading}
-                  onClick={() => handleReply(thread.id)}
-                >
-                  发送
-                </Button>
-                <Button size="small" onClick={() => setReplyTo(null)}>
-                  取消
-                </Button>
-              </Space>
-            </div>
-          )}
-          {thread.replies.length > 0 && (
-            <div className="comment-thread__replies">
-              {thread.replies.map((reply) => (
-                <div key={reply.id} className="comment-thread__reply">
-                  <Space align="start">
-                    <Avatar
-                      size="small"
-                      style={{
-                        backgroundColor: reply.author.color,
-                        color: '#fff',
-                      }}
-                    >
-                      {reply.author.displayName?.slice(0, 1) ??
-                        reply.author.username.slice(0, 1)}
-                    </Avatar>
-                    <div>
-                      <Typography.Text strong style={{ fontSize: 12 }}>
-                        {reply.author.displayName ?? reply.author.username}
-                      </Typography.Text>
-                      <Typography.Text
-                        type="secondary"
-                        style={{ fontSize: 12, marginLeft: 8 }}
-                      >
-                        {dayjs(reply.createdAt).format('MM-DD HH:mm')}
-                      </Typography.Text>
-                      <div>
-                        <Typography.Text>{reply.content}</Typography.Text>
-                      </div>
-                    </div>
-                  </Space>
-                </div>
-              ))}
-            </div>
-          )}
+  const renderReply = (reply: CommentDTO) => (
+    <div key={reply.id} className="comment-reply">
+      <Avatar
+        size={20}
+        className="comment-reply__avatar"
+        style={{ backgroundColor: reply.author.color, color: '#fff' }}
+      >
+        {getInitial(reply.author)}
+      </Avatar>
+      <div className="comment-reply__main">
+        <div className="comment-reply__meta">
+          <span className="comment-reply__author">
+            {getAuthorName(reply.author)}
+          </span>
+          <span className="comment-reply__time">
+            {dayjs(reply.createdAt).format('MM-DD HH:mm')}
+          </span>
         </div>
-      </Space>
+        <p className="comment-reply__content">{reply.content}</p>
+      </div>
+    </div>
+  );
+
+  const renderThread = (thread: CommentThread) => {
+    const resolved = thread.resolved;
+    return (
+      <article
+        key={thread.id}
+        className={`comment-card${resolved ? ' comment-card--resolved' : ''}`}
+      >
+        {thread.anchor?.quote && (
+          <p className="comment-card__quote" title={thread.anchor.quote}>
+            {thread.anchor.quote}
+          </p>
+        )}
+
+        <div className="comment-card__meta">
+          <Avatar
+            size={22}
+            style={{ backgroundColor: thread.author.color, color: '#fff' }}
+          >
+            {getInitial(thread.author)}
+          </Avatar>
+          <span className="comment-card__author">
+            {getAuthorName(thread.author)}
+          </span>
+          <span className="comment-card__time">
+            {dayjs(thread.createdAt).format('MM-DD HH:mm')}
+          </span>
+          {resolved && <span className="comment-card__resolved">已解决</span>}
+        </div>
+
+        <p className="comment-card__content">{thread.content}</p>
+
+        <div className="comment-card__actions">
+          <Button
+            type="text"
+            size="small"
+            icon={<MessageOutlined />}
+            aria-pressed={replyTo === thread.id}
+            onClick={() => setReplyTo(replyTo === thread.id ? null : thread.id)}
+          >
+            回复
+          </Button>
+          <Button
+            type="text"
+            size="small"
+            icon={<AimOutlined />}
+            disabled={!thread.anchor}
+            onClick={() => navigateToComment(thread)}
+          >
+            定位
+          </Button>
+          <Tooltip title={resolved ? '重新打开这条批注' : '标记为已解决'}>
+            <Button
+              type="text"
+              size="small"
+              className={`comment-card__resolve${
+                resolved ? ' comment-card__resolve--active' : ''
+              }`}
+              icon={<CheckCircleOutlined />}
+              aria-pressed={resolved}
+              onClick={() => handleResolve(thread.id, !resolved)}
+            >
+              {resolved ? '重开' : '解决'}
+            </Button>
+          </Tooltip>
+          <span className="comment-card__spacer" />
+          <Popconfirm
+            title="删除这条批注？"
+            description="删除后不可恢复"
+            okText="删除"
+            cancelText="取消"
+            okButtonProps={{ danger: true }}
+            onConfirm={() => handleDelete(thread.id)}
+          >
+            <Button
+              type="text"
+              size="small"
+              danger
+              icon={<DeleteOutlined />}
+              aria-label="删除批注"
+            />
+          </Popconfirm>
+        </div>
+
+        {replyTo === thread.id && (
+          <div className="comment-card__reply-editor">
+            <Input.TextArea
+              autoFocus
+              rows={2}
+              value={replyContent}
+              onChange={(e) => setReplyContent(e.target.value)}
+              placeholder="输入回复…"
+            />
+            <div className="comment-card__reply-actions">
+              <Button size="small" onClick={() => setReplyTo(null)}>
+                取消
+              </Button>
+              <Button
+                type="primary"
+                size="small"
+                loading={replyLoading}
+                onClick={() => handleReply(thread.id)}
+              >
+                发送
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {thread.replies.length > 0 && (
+          <div className="comment-card__replies">
+            {thread.replies.map(renderReply)}
+          </div>
+        )}
+      </article>
+    );
+  };
+
+  const renderSkeleton = () => (
+    <div className="comment-panel__list">
+      {[0, 1].map((key) => (
+        <div key={key} className="comment-card comment-card--skeleton">
+          <Skeleton
+            active
+            title={false}
+            paragraph={{ rows: 3, width: ['76%', '100%', '52%'] }}
+          />
+        </div>
+      ))}
     </div>
   );
 
   return (
-    <Card
-      title="评论"
-      size="small"
-      className="comment-panel"
-      variant="borderless"
+    <aside
+      className={`comment-panel${visible ? '' : ' comment-panel--hidden'}`}
+      aria-label="评论面板"
     >
-      {loading ? (
-        <Spin description="加载中..." />
-      ) : threads.length === 0 ? (
-        <Empty description="暂无批注" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-      ) : (
-        <div className="comment-panel__list">{threads.map(renderThread)}</div>
-      )}
-    </Card>
+      <div className="comment-panel__header">
+        <div className="comment-panel__heading">
+          <span className="comment-panel__title">评论</span>
+          {threads.length > 0 && (
+            <span className="comment-panel__count">{threads.length}</span>
+          )}
+        </div>
+        <Tooltip title="收起评论">
+          <Button
+            type="text"
+            size="small"
+            className="comment-panel__close"
+            icon={<CloseOutlined />}
+            aria-label="收起评论"
+            onClick={onClose}
+          />
+        </Tooltip>
+      </div>
+
+      <div className="comment-panel__body" aria-busy={loading}>
+        {loading ? (
+          renderSkeleton()
+        ) : threads.length === 0 ? (
+          <div className="comment-panel__empty">
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description="还没有批注"
+            />
+            <p className="comment-panel__empty-hint">
+              选中正文内容后点击「批注」即可添加
+            </p>
+          </div>
+        ) : (
+          <div className="comment-panel__list">{threads.map(renderThread)}</div>
+        )}
+      </div>
+    </aside>
   );
 };

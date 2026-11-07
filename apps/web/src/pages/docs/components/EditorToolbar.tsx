@@ -13,7 +13,8 @@ import {
   UnorderedListOutlined,
 } from '@ant-design/icons';
 import type { Editor } from '@tiptap/react';
-import { Button, Select, Space, Tooltip } from 'antd';
+import { useEditorState } from '@tiptap/react';
+import { Button, Select, Tooltip } from 'antd';
 import React from 'react';
 
 interface EditorToolbarProps {
@@ -30,20 +31,60 @@ const headingOptions = [
   { value: '6', label: '标题 6' },
 ];
 
+const headingLevels = [1, 2, 3, 4, 5, 6] as const;
+
+interface ToolButtonProps {
+  label: string;
+  icon: React.ReactNode;
+  onClick: () => void;
+  active?: boolean;
+  disabled?: boolean;
+}
+
+/** 图标工具按钮：Tooltip + aria-label 双通道可访问名称，active 用浅底强调 */
+const ToolButton: React.FC<ToolButtonProps> = ({
+  label,
+  icon,
+  onClick,
+  active,
+  disabled,
+}) => (
+  <Tooltip title={label} mouseEnterDelay={0.4}>
+    <Button
+      type="text"
+      size="small"
+      className={`doc-editor__toolbar-btn${
+        active ? ' doc-editor__toolbar-btn--active' : ''
+      }`}
+      icon={icon}
+      aria-label={label}
+      aria-pressed={active}
+      disabled={disabled}
+      onClick={onClick}
+    />
+  </Tooltip>
+);
+
 export const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor }) => {
-  const headingValue = editor.isActive('heading', { level: 1 })
-    ? '1'
-    : editor.isActive('heading', { level: 2 })
-      ? '2'
-      : editor.isActive('heading', { level: 3 })
-        ? '3'
-        : editor.isActive('heading', { level: 4 })
-          ? '4'
-          : editor.isActive('heading', { level: 5 })
-            ? '5'
-            : editor.isActive('heading', { level: 6 })
-              ? '6'
-              : '0';
+  // useEditorState 订阅选区/文档变化，避免 active 态在 Tiptap 3 下不刷新
+  const state = useEditorState({
+    editor,
+    selector: ({ editor: e }) => ({
+      heading:
+        headingLevels.find((level) => e.isActive('heading', { level })) ?? 0,
+      bold: e.isActive('bold'),
+      italic: e.isActive('italic'),
+      strike: e.isActive('strike'),
+      code: e.isActive('code'),
+      bulletList: e.isActive('bulletList'),
+      orderedList: e.isActive('orderedList'),
+      blockquote: e.isActive('blockquote'),
+      codeBlock: e.isActive('codeBlock'),
+      link: e.isActive('link'),
+      canUndo: e.can().undo(),
+      canRedo: e.can().redo(),
+    }),
+  });
 
   const toggleHeading = (value: string) => {
     if (value === '0') {
@@ -77,95 +118,109 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor }) => {
   };
 
   return (
-    <Space wrap className="doc-editor__toolbar">
-      <Tooltip title="撤销">
-        <Button
+    <div className="doc-editor__toolbar" role="toolbar" aria-label="格式工具栏">
+      <div className="doc-editor__tool-group">
+        <ToolButton
+          label="撤销"
           icon={<UndoOutlined />}
-          onClick={() => editor.commands.undo()}
-          disabled={!editor.can().undo()}
+          disabled={!state.canUndo}
+          onClick={() => editor.chain().focus().undo().run()}
         />
-      </Tooltip>
-      <Tooltip title="重做">
-        <Button
+        <ToolButton
+          label="重做"
           icon={<RedoOutlined />}
-          onClick={() => editor.commands.redo()}
-          disabled={!editor.can().redo()}
+          disabled={!state.canRedo}
+          onClick={() => editor.chain().focus().redo().run()}
         />
-      </Tooltip>
-      <Tooltip title="粗体">
-        <Button
+      </div>
+
+      <span className="doc-editor__tool-divider" aria-hidden="true" />
+
+      <div className="doc-editor__tool-group">
+        <ToolButton
+          label="粗体"
           icon={<BoldOutlined />}
-          type={editor.isActive('bold') ? 'primary' : 'default'}
+          active={state.bold}
           onClick={() => editor.chain().focus().toggleBold().run()}
         />
-      </Tooltip>
-      <Tooltip title="斜体">
-        <Button
+        <ToolButton
+          label="斜体"
           icon={<ItalicOutlined />}
-          type={editor.isActive('italic') ? 'primary' : 'default'}
+          active={state.italic}
           onClick={() => editor.chain().focus().toggleItalic().run()}
         />
-      </Tooltip>
-      <Tooltip title="删除线">
-        <Button
+        <ToolButton
+          label="删除线"
           icon={<StrikethroughOutlined />}
-          type={editor.isActive('strike') ? 'primary' : 'default'}
+          active={state.strike}
           onClick={() => editor.chain().focus().toggleStrike().run()}
         />
-      </Tooltip>
-      <Tooltip title="行内代码">
-        <Button
+        <ToolButton
+          label="行内代码"
           icon={<CodeOutlined />}
-          type={editor.isActive('code') ? 'primary' : 'default'}
+          active={state.code}
           onClick={() => editor.chain().focus().toggleCode().run()}
         />
-      </Tooltip>
-      <Select
-        value={headingValue}
-        options={headingOptions}
-        onChange={toggleHeading}
-        style={{ width: 100 }}
-      />
-      <Tooltip title="无序列表">
-        <Button
+      </div>
+
+      <span className="doc-editor__tool-divider" aria-hidden="true" />
+
+      <div className="doc-editor__tool-group">
+        <Select
+          className="doc-editor__heading-select"
+          aria-label="段落样式"
+          size="small"
+          value={String(state.heading)}
+          options={headingOptions}
+          onChange={toggleHeading}
+          popupMatchSelectWidth={120}
+        />
+        <ToolButton
+          label="无序列表"
           icon={<UnorderedListOutlined />}
-          type={editor.isActive('bulletList') ? 'primary' : 'default'}
+          active={state.bulletList}
           onClick={() => editor.chain().focus().toggleBulletList().run()}
         />
-      </Tooltip>
-      <Tooltip title="有序列表">
-        <Button
+        <ToolButton
+          label="有序列表"
           icon={<OrderedListOutlined />}
-          type={editor.isActive('orderedList') ? 'primary' : 'default'}
+          active={state.orderedList}
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
         />
-      </Tooltip>
-      <Tooltip title="引用">
-        <Button
+        <ToolButton
+          label="引用"
           icon={<BlockOutlined />}
-          type={editor.isActive('blockquote') ? 'primary' : 'default'}
+          active={state.blockquote}
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
         />
-      </Tooltip>
-      <Tooltip title="代码块">
-        <Button
+        <ToolButton
+          label="代码块"
           icon={<CodeOutlined />}
-          type={editor.isActive('codeBlock') ? 'primary' : 'default'}
+          active={state.codeBlock}
           onClick={() => editor.chain().focus().toggleCodeBlock().run()}
         />
-      </Tooltip>
-      <Tooltip title="链接">
-        <Button icon={<LinkOutlined />} onClick={setLink} />
-      </Tooltip>
-      <Tooltip title="表格">
-        <Button icon={<TableOutlined />} onClick={insertTable} />
-      </Tooltip>
-      <Tooltip title="分割线">
-        <Button
+      </div>
+
+      <span className="doc-editor__tool-divider" aria-hidden="true" />
+
+      <div className="doc-editor__tool-group">
+        <ToolButton
+          label="链接"
+          icon={<LinkOutlined />}
+          active={state.link}
+          onClick={setLink}
+        />
+        <ToolButton
+          label="插入表格"
+          icon={<TableOutlined />}
+          onClick={insertTable}
+        />
+        <ToolButton
+          label="分割线"
           icon={<MinusOutlined />}
           onClick={() => editor.chain().focus().setHorizontalRule().run()}
         />
-      </Tooltip>
-    </Space>
+      </div>
+    </div>
   );
 };

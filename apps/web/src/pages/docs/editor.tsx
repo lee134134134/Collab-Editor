@@ -1,4 +1,4 @@
-import { ArrowLeftOutlined, ReloadOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, MessageOutlined } from '@ant-design/icons';
 import { Collaboration } from '@tiptap/extension-collaboration';
 import { CollaborationCaret } from '@tiptap/extension-collaboration-caret';
 import {
@@ -16,28 +16,30 @@ import {
   ySyncPluginKey,
 } from '@tiptap/y-tiptap';
 import { history, useModel, useParams } from '@umijs/max';
-import { Button, Input, Modal, message, Spin, Tag, Tooltip } from 'antd';
+import { Button, Input, Modal, message, Spin, Tooltip, theme } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
 import * as Y from 'yjs';
 import { createComment } from '@/services/comments';
 import { getDoc, updateDoc } from '@/services/docs';
 import { CommentPanel } from './components/CommentPanel';
+import {
+  ConnectionBanner,
+  ConnectionStatus,
+} from './components/ConnectionStatus';
 import { CommentMark } from './components/commentMark';
 import { EditorToolbar } from './components/EditorToolbar';
 import { PresenceBar } from './components/PresenceBar';
 import { useCollabDoc } from './components/useCollabDoc';
 import './components/editor.css';
 
-const statusTag = {
-  connected: { color: 'success', text: '已连接' },
-  connecting: { color: 'processing', text: '连接中' },
-  disconnected: { color: 'error', text: '已断线' },
-} as const;
+/** 允许在 style 上挂载 CSS 变量（从 antd token 派生，供 editor.css 使用） */
+type CssVarStyle = React.CSSProperties & Record<`--${string}`, string>;
 
 const DocEditor: React.FC = () => {
   const { id: docId } = useParams<{ id: string }>();
   const { initialState } = useModel('@@initialState');
   const currentUser = initialState?.currentUser;
+  const { token } = theme.useToken();
 
   const { ydoc, provider, status, reconnect } = useCollabDoc(docId ?? '');
   const [docLoading, setDocLoading] = useState(true);
@@ -45,6 +47,29 @@ const DocEditor: React.FC = () => {
   const [commentModalOpen, setCommentModalOpen] = useState(false);
   const [commentContent, setCommentContent] = useState('');
   const [commentSubmitting, setCommentSubmitting] = useState(false);
+  // 窄屏默认收起评论，避免一进来就盖住正文；宽屏保持常驻
+  const [commentPanelOpen, setCommentPanelOpen] = useState(() =>
+    typeof window === 'undefined' ? true : window.innerWidth > 1024,
+  );
+  // 断线提示延迟出现：初次进入的一两秒「连接中」不应让横幅闪一下
+  const [connectionNoticeVisible, setConnectionNoticeVisible] = useState(false);
+
+  useEffect(() => {
+    if (status === 'connected') {
+      setConnectionNoticeVisible(false);
+      return;
+    }
+    if (status === 'disconnected') {
+      setConnectionNoticeVisible(true);
+      return;
+    }
+    if (connectionNoticeVisible) return;
+    const timer = window.setTimeout(
+      () => setConnectionNoticeVisible(true),
+      2000,
+    );
+    return () => window.clearTimeout(timer);
+  }, [status, connectionNoticeVisible]);
 
   // 拉取文档元信息
   useEffect(() => {
@@ -202,10 +227,44 @@ const DocEditor: React.FC = () => {
     return null;
   }
 
+  // 从 antd token 派生 CSS 变量，集中给 editor.css 复用（浅色主题自适应）
+  const docThemeStyle: CssVarStyle = {
+    '--doc-canvas': token.colorBgLayout,
+    '--doc-surface': token.colorBgContainer,
+    '--doc-surface-muted': token.colorFillQuaternary,
+    '--doc-fill': token.colorFillTertiary,
+    '--doc-border': token.colorBorderSecondary,
+    '--doc-border-strong': token.colorBorder,
+    '--doc-text': token.colorText,
+    '--doc-text-2': token.colorTextSecondary,
+    '--doc-text-3': token.colorTextTertiary,
+    '--doc-primary': token.colorPrimary,
+    '--doc-primary-soft': token.colorPrimaryBg,
+    '--doc-primary-border': token.colorPrimaryBorder,
+    '--doc-success': token.colorSuccess,
+    '--doc-success-bg': token.colorSuccessBg,
+    '--doc-success-border': token.colorSuccessBorder,
+    '--doc-warning': token.colorWarning,
+    '--doc-warning-bg': token.colorWarningBg,
+    '--doc-warning-border': token.colorWarningBorder,
+    '--doc-error': token.colorError,
+    '--doc-error-bg': token.colorErrorBg,
+    '--doc-error-border': token.colorErrorBorder,
+    '--doc-radius': `${token.borderRadius}px`,
+    '--doc-radius-lg': `${token.borderRadiusLG}px`,
+    '--doc-shadow-paper': token.boxShadowTertiary,
+    '--doc-shadow-float': token.boxShadowSecondary,
+  };
+
   if (docLoading || !ydoc || !provider) {
     return (
-      <div style={{ padding: 48, textAlign: 'center' }}>
-        <Spin description="正在连接协同文档…" />
+      <div className="doc-editor" style={docThemeStyle}>
+        <div className="doc-editor__loading">
+          <div className="doc-editor__loading-card">
+            <Spin size="large" />
+            <span className="doc-editor__loading-text">正在连接协同文档…</span>
+          </div>
+        </div>
       </div>
     );
   }
@@ -222,54 +281,74 @@ const DocEditor: React.FC = () => {
       ),
   );
 
-  const tag = statusTag[status];
+  const commentToggleLabel = commentPanelOpen ? '收起评论' : '展开评论';
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: 'calc(100vh - 56px)',
-        background: '#fff',
-      }}
-    >
+    <div className="doc-editor" style={docThemeStyle}>
       {/* 顶栏 */}
-      <div className="doc-editor__header">
-        <Tooltip title="返回文档库">
-          <Button
-            icon={<ArrowLeftOutlined />}
-            type="text"
-            onClick={() => history.push('/docs')}
-          />
-        </Tooltip>
-        <Input
-          className="doc-editor__title-input"
-          value={title}
-          onChange={handleTitleChange}
-          placeholder="文档标题"
-          variant="borderless"
-        />
-        <PresenceBar provider={provider} />
-        <Tag color={tag.color}>{tag.text}</Tag>
-        <Tooltip title="手动重连">
-          <Button icon={<ReloadOutlined />} onClick={reconnect}>
-            重连
-          </Button>
-        </Tooltip>
-      </div>
+      <header className="doc-editor__header">
+        <div className="doc-editor__header-main">
+          <Tooltip title="返回文档库">
+            <Button
+              type="text"
+              className="doc-editor__icon-btn"
+              icon={<ArrowLeftOutlined />}
+              aria-label="返回文档库"
+              onClick={() => history.push('/docs')}
+            />
+          </Tooltip>
+          <div className="doc-editor__title-field">
+            <Input
+              className="doc-editor__title-input"
+              value={title}
+              onChange={handleTitleChange}
+              placeholder="文档标题"
+              aria-label="文档标题"
+              variant="borderless"
+            />
+          </div>
+        </div>
+        <div className="doc-editor__header-actions">
+          <PresenceBar provider={provider} />
+          <ConnectionStatus status={status} onReconnect={reconnect} />
+          <Tooltip title={commentToggleLabel}>
+            <Button
+              type="text"
+              className={`doc-editor__icon-btn${
+                commentPanelOpen ? ' doc-editor__icon-btn--active' : ''
+              }`}
+              icon={<MessageOutlined />}
+              aria-label={commentToggleLabel}
+              aria-pressed={commentPanelOpen}
+              onClick={() => setCommentPanelOpen((open) => !open)}
+            />
+          </Tooltip>
+        </div>
+      </header>
+
+      {/* 连接异常提示：细横幅，不遮挡编辑区 */}
+      {connectionNoticeVisible && (
+        <ConnectionBanner status={status} onReconnect={reconnect} />
+      )}
 
       {/* 工具栏 */}
       {collabReady && editor && <EditorToolbar editor={editor} />}
 
       {/* 编辑区 + 评论面板 */}
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-        <div className="doc-editor__content">
+      <div className="doc-editor__body">
+        <main className="doc-editor__content">
           <div className="doc-editor__paper">
             {collabReady && editor && <EditorContent editor={editor} />}
           </div>
-        </div>
+        </main>
         {collabReady && editor && ydoc && (
-          <CommentPanel docId={docId} editor={editor} ydoc={ydoc} />
+          <CommentPanel
+            docId={docId}
+            editor={editor}
+            ydoc={ydoc}
+            visible={commentPanelOpen}
+            onClose={() => setCommentPanelOpen(false)}
+          />
         )}
       </div>
 
@@ -283,14 +362,17 @@ const DocEditor: React.FC = () => {
             return from !== to && e.isEditable;
           }}
         >
-          <Button
-            type="primary"
-            size="small"
-            className="doc-editor__bubble-btn"
-            onClick={openCommentModal}
-          >
-            批注
-          </Button>
+          <div className="doc-editor__bubble">
+            <Button
+              type="text"
+              size="small"
+              className="doc-editor__bubble-btn"
+              icon={<MessageOutlined />}
+              onClick={openCommentModal}
+            >
+              批注
+            </Button>
+          </div>
         </BubbleMenu>
       )}
 
@@ -301,6 +383,8 @@ const DocEditor: React.FC = () => {
         onOk={handleCreateComment}
         onCancel={() => setCommentModalOpen(false)}
         confirmLoading={commentSubmitting}
+        okText="添加"
+        cancelText="取消"
       >
         <Input.TextArea
           rows={4}

@@ -49,16 +49,16 @@ export const PresenceBar: React.FC<PresenceBarProps> = ({ provider }) => {
   if (users.length === 0) return null;
 
   return (
-    <Avatar.Group max={{ count: 6 }}>
+    <Avatar.Group max={{ count: 5 }} className="doc-editor__presence">
       {users.map((u) => (
-        <Tooltip key={u.clientId} title={u.name}>
+        <Tooltip key={u.clientId} title={`${u.name} · 在线`}>
           <Avatar
             style={{
               backgroundColor: u.color,
               color: '#fff',
               fontSize: 12,
             }}
-            size="small"
+            size={24}
           >
             {u.name.slice(0, 1)}
           </Avatar>
