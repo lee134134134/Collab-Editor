@@ -4,17 +4,17 @@
   "private": true,
   "description": "类飞书协同文档编辑器 —— pnpm monorepo (web / server / shared)",
   "scripts": {
-    "dev": "pnpm --filter @collab/web dev",
-    "dev:server": "pnpm --filter @collab/server start:dev",
-    "dev:all": "pnpm --parallel --filter @collab/web --filter @collab/server run dev",
+    "dev": "pnpm --filter @collab/shared build && pnpm --filter @collab/web dev",
+    "dev:server": "pnpm --filter @collab/shared build && pnpm --filter @collab/server start:dev",
+    "dev:all": "pnpm --filter @collab/shared build && pnpm --parallel --filter @collab/web --filter @collab/server run dev",
     "build": "pnpm -r build",
-    "type-check": "pnpm -r type-check",
-    "test": "pnpm --filter @collab/server test",
-    "test:integration": "pnpm --filter @collab/server test:integration",
-    "test:e2e": "node scripts/e2e.mjs",
+    "type-check": "pnpm --filter @collab/shared build && pnpm -r type-check",
+    "test": "pnpm --filter @collab/shared build && pnpm --filter @collab/server test",
+    "test:integration": "pnpm --filter @collab/shared build && pnpm --filter @collab/server test:integration",
+    "test:e2e": "pnpm --filter @collab/shared build && node scripts/e2e.mjs",
     "lint": "biome lint",
     "lint-staged": "lint-staged",
-    "prepare": "husky"
+    "prepare": "husky && pnpm --filter @collab/shared build"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.3",

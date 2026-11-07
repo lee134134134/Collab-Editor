@@ -15,7 +15,7 @@ pnpm monorepo：React 19 + antd 6 + Umi max 前端，NestJS + Yjs 后端，交�
 | `pnpm type-check` | 全仓类型检查（web 会先 `max setup`） |
 | `pnpm lint` | Biome 检查（全仓，含 apps/server） |
 | `pnpm test` | 服务端 Vitest 单测（collab / file-lock） |
-| `pnpm test:integration` | 集成测试（需后端已启动；14 断言覆盖鉴权/文档/评论/协同协议） |
+| `pnpm test:integration` | 集成测试（需后端已启动；覆盖鉴权/文档/评论/协同协议） |
 | `pnpm test:e2e` | 浏览器 E2E 冒烟（需本机 Chrome；服务未启动时脚本自动拉起） |
 
 **改动最小门禁**：`pnpm type-check` + `pnpm lint`；涉及协同/REST 时补 `pnpm test` 与
@@ -103,7 +103,7 @@ references/                     # 旧项目 Agent 工作流框架（git submodul
 - 评论面板依赖 WS `type=100` 活动帧，刚创建时存在瞬时竞态（随后自愈）。
 - 删除 `apps/web/src/.umi` 后直接 `pnpm dev` 会报 `Can't resolve .../.umi/exports`，先执行
   `pnpm --filter @collab/web exec max setup`。
-- E2E 双会话用不同 origin（`localhost:8001` 与 `127.0.0.1:8001`）隔离 localStorage。
+- E2E 使用两个独立 browser context 隔离 localStorage；脚本会自动拉起未启动的前后端。
 - 本机 git 若遇 iconv 报错，使用 `git -c core.precomposeunicode=false ...`。
 
 ## 7. 速查表

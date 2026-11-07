@@ -44,9 +44,30 @@ function runScript(args) {
     cwd: ROOT,
     stdio: 'inherit',
     env: process.env,
+    // 独立进程组，退出时可连同 tsx watch / max dev 子进程一起回收
+    detached: process.platform !== 'win32',
   });
   spawned.push(child);
+  child.once('exit', () => {
+    const index = spawned.indexOf(child);
+    if (index >= 0) spawned.splice(index, 1);
+  });
   return child;
+}
+
+function stopSpawned() {
+  for (const child of spawned) {
+    if (child.killed) continue;
+    try {
+      if (process.platform !== 'win32' && child.pid) {
+        process.kill(-child.pid, 'SIGTERM');
+      } else {
+        child.kill('SIGTERM');
+      }
+    } catch {
+      /* 已退出或权限不足，忽略 */
+    }
+  }
 }
 
 async function ensureServer() {
@@ -58,6 +79,10 @@ async function ensureServer() {
     });
 
   if (await login()) return;
+  // tsx watch 重启的短窗口内不要误判为“未启动”，避免重复拉起触发文件锁冲突
+  await sleep(1500);
+  if (await login()) return;
+
   console.log('[e2e] 启动后端 :3000/:3001 …');
   runScript(['--filter', '@collab/server', 'start:dev']);
   await waitFor('后端', login);
@@ -66,6 +91,9 @@ async function ensureServer() {
 async function ensureWeb() {
   const up = () => isUp(WEB);
   if (await up()) return;
+  await sleep(1500);
+  if (await up()) return;
+
   console.log('[e2e] 启动前端 :8001 …');
   runScript(['--filter', '@collab/web', 'dev']);
   await waitFor('前端', up);
@@ -192,7 +220,5 @@ main()
     process.exitCode = 1;
   })
   .finally(() => {
-    for (const child of spawned) {
-      if (!child.killed) child.kill('SIGTERM');
-    }
+    stopSpawned();
   });
