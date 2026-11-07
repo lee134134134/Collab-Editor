@@ -43,6 +43,6 @@ pnpm test:e2e          # 浏览器 E2E（需 Chrome）
 ## 已知限制
 
 - 无权限体系/图片上传/版本历史/导出。
-- 4401 重连重建 Y.Doc 与编辑器实例，撤销历史丢失（内容由服务端快照恢复）。
+- 4401 重连重建 Y.Doc 与编辑器实例：撤销历史丢失；断线期间的未同步修改可能丢失（以服务端快照恢复）。
 - 删除 `apps/web/src/.umi` 后需先 `pnpm --filter @collab/web exec max setup`。
 - 本机 git 若 iconv 报错，使用 `git -c core.precomposeunicode=false ...`。

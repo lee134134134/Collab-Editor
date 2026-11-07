@@ -99,7 +99,7 @@ references/                     # 旧项目 Agent 工作流框架（git submodul
 ## 6. 已知限制 / 注意事项
 
 - 首期无权限体系、图片上传、版本历史 UI、导出。
-- ticket 过期（4401）重连会重建 Y.Doc 与编辑器实例，本地撤销历史丢失；内容由服务端快照恢复。
+- ticket 过期（4401）重连会重建 Y.Doc 与编辑器实例：本地撤销历史丢失；断线期间的未同步修改可能丢失（以服务端快照恢复）。
 - 评论面板依赖 WS `type=100` 活动帧，刚创建时存在瞬时竞态（随后自愈）。
 - 删除 `apps/web/src/.umi` 后直接 `pnpm dev` 会报 `Can't resolve .../.umi/exports`，先执行
   `pnpm --filter @collab/web exec max setup`。
